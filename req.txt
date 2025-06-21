@@ -1,0 +1,11 @@
+playwright
+openai
+google-generativeai
+chromadb
+fastapi
+uvicorn
+streamlit
+scikit-learn
+numpy
+pandas
+markdown2

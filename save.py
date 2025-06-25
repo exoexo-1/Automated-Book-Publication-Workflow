@@ -83,3 +83,34 @@ def get_latest_version(base_id: str, stage: str) -> int:
         and meta.get("stage") == stage
     ]
     return max(versions, default=0)
+
+
+def format_chapter_markdown(chapter_data):
+    content = chapter_data.get('content', '').strip()
+    metadata = chapter_data.get('metadata', {})
+    
+    # Metadata fields
+    book_title = metadata.get('book_title', 'Unknown Book')
+    chapter_title = metadata.get('chapter_title', 'Untitled Chapter')
+    chapter_info = metadata.get('chapter_info', '')
+    author = metadata.get('author', 'Unknown Author')
+    version = metadata.get('version', 'N/A')
+    stage = metadata.get('stage', 'N/A')
+    reviewer_feedback = metadata.get('reviewer_feedback', 'No feedback provided.')
+    source_url = metadata.get('source_url', '')
+
+    # Markdown formatting
+    markdown = f"# 📖 {chapter_title}\n"
+    markdown += f"### *{chapter_info} – {book_title}*\n"
+    markdown += f"**Author:** {author}  \n"
+    markdown += f"**Version:** {version} | **Stage:** {stage}  \n"
+    if source_url:
+        markdown += f"[🔗 Source]({source_url})\n"
+    markdown += "\n---\n\n"
+    markdown += "## 📝 Content:\n\n"
+    markdown += "```\n" + content + "\n```\n\n"
+    markdown += "---\n\n"
+    markdown += "## 🧾 Reviewer Feedback:\n"
+    markdown += "> " + reviewer_feedback.replace('\n', '\n> ') + "\n"
+
+    return markdown

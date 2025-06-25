@@ -1,4 +1,4 @@
-from save import save_chapter_auto_version, get_latest_version, fetch_chapter_by_version
+from save import save_chapter_auto_version, get_latest_version, fetch_chapter_by_version, format_chapter_markdown
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -103,9 +103,9 @@ def reviwer(raw_data,rewritten_data):
     return result
 
 
-reviewer_feedback = reviwer(raw_data, rewritten_data)
-print("AI Verification Result:\n")
-print(reviewer_feedback)
+# reviewer_feedback = reviwer(raw_data, rewritten_data)
+# print("AI Verification Result:\n")
+# print(reviewer_feedback)
 
 def reviwer_save():
     save_chapter_auto_version(
@@ -118,9 +118,9 @@ def reviwer_save():
         stage="reviewed" 
     )
 
-reviwer_save() 
+# reviwer_save() 
 
-latest_version_reviewed = get_latest_version("chapter1", "reviewed")
-versioned_id_reviewed = f"chapter1_ver{latest_version_reviewed}"
-reviewed_data = fetch_chapter_by_version(versioned_id_reviewed, "reviewed")
-print("\n\n\n",reviewed_data)
+# latest_version_reviewed = get_latest_version("chapter1", "reviewed")
+# versioned_id_reviewed = f"chapter1_ver{latest_version_reviewed}"
+# reviewed_data = fetch_chapter_by_version(versioned_id_reviewed, "reviewed")
+# print("\n\n\n", format_chapter_markdown(reviewed_data))

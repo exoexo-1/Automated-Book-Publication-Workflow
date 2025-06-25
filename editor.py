@@ -1,9 +1,10 @@
-from save import save_chapter_auto_version, get_latest_version, fetch_chapter_by_version
+from save import save_chapter_auto_version, get_latest_version, fetch_chapter_by_version, format_chapter_markdown
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import textwrap
 import time
+
 
 # Load environment variables
 load_dotenv(override=True)
@@ -14,6 +15,8 @@ if not google_api_key:
 
 # Configure Gemini
 genai.configure(api_key=google_api_key)
+
+
 
 latest_version_raw = get_latest_version("chapter1", "raw")
 latest_version_reviewed = get_latest_version("chapter1", "reviewed")
@@ -82,7 +85,7 @@ def editor(raw_data, reviewed_data):
         raise
 
 # Call editor function
-edited_content = editor(raw_data, reviewed_data)
+# edited_content = editor(raw_data, reviewed_data)
 
 def editor_save():
     save_chapter_auto_version(
@@ -95,10 +98,10 @@ def editor_save():
         stage="edited"
     )
 
-editor_save()
+# editor_save()
 
-# Fetch and display the saved edited version
-latest_version_edited = get_latest_version("chapter1", "edited")
-versioned_id_edited = f"chapter1_ver{latest_version_edited}"
-edited_data = fetch_chapter_by_version(versioned_id_edited, "edited")
-print("\n\n\n", edited_data)
+# # Fetch and display the saved edited version
+# latest_version_edited = get_latest_version("chapter1", "edited")
+# versioned_id_edited = f"chapter1_ver{latest_version_edited}"
+# edited_data = fetch_chapter_by_version(versioned_id_edited, "edited")
+# print("\n\n\n", format_chapter_markdown(edited_data))

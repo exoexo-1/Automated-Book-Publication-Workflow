@@ -34,7 +34,8 @@ def save_chapter_auto_version(data: dict, base_id: str, stage:str):
         "source_url": data["source_url"],
         "version": version,
         "stage": stage,
-        "versioned_id": versioned_id
+        "versioned_id": versioned_id,
+        "reviewer_feedback": data.get("reviewer_feedback", "")
     }
 
     collection.add(

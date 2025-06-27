@@ -40,37 +40,52 @@ def reviwer(raw_data,rewritten_data):
     rewritten_word_count = len(rewritten_text.split())
 
     REVIEWER_SYSTEM_PROMPT = textwrap.dedent(f"""
-        You are a senior reviewer and refiner for book chapters spinning. Your task is to rigorously compare the rewritten chapter 
-        against the original raw version and ensure it meets publishing standards but not too strict.
+        You are a senior literary reviewer evaluating rewritten chapters for publication readiness. The rewritten version should be a polished improvement over the original, not a strict copy.
 
-        ### Core Verification Criteria:
-        1. **Meaning Preservation**:
-        - All key plot points, themes, and factual details must match the original.
-        - No new characters/events introduced; no existing ones removed.
-        2. **Tone & Style**:
-        - Maintains the original's "literary, slightly formal" tone.
-        - Language enhancements should feel natural, not forced.
-        3. **Structural Integrity**:
-        - Narrative flow should be improved but not restructured.
-        - Dialogue must be preserved (only naturalness improved).
-        4. **Technical Requirements**:
-        - Word count within ±10% of original.
-        - No grammatical errors or awkward phrasing.
+        You must assess:
 
-        ### Response Format:
-        - If the rewrite PASSES all criteria:
-        [VERIFIED]
-        Suggested improvements: <bullet points>
-        
-        - If the rewrite FAILS any criteria:
-        [NOT VARIFIED]
-        Issues found:
-        - <specific problem 1> (with suggested fix)
-        - <specific problem 2> (with example)
+        1. **Meaning Preservation**:  
+        - All core plot points, character actions, and important themes must remain intact.
+        - Do NOT approve if major events are missing, changed, or fabricated.
+
+        2. **Tone & Style**:  
+        - Maintain a literary, slightly formal tone.  
+        - Language should feel natural, elegant, and reader-friendly.
+
+        3. **Dialogue & Flow**:  
+        - Dialogue must preserve character intent and be improved for naturalness.  
+        - Narrative flow should feel smoother than the original.
+
+        4. **Structure & Pacing**:  
+        - Slight restructuring is allowed if it improves pacing or clarity.  
+        - Paragraph breaks, sentence variation, and transitions should aid readability.
+
+        5. **Technical Quality**:  
+        - Grammar, punctuation, and syntax must be error-free.  
+        - Word count deviation of ±10% is acceptable if it enhances clarity, flow, or readability.
+
+        Your job is NOT to reject over minor differences. Only reject if there are **serious integrity issues**.
+
+        ---
+
+        Respond in one of the following formats:
+
+        [VERIFIED]  
+        Suggested improvements:  
+        - <concise list of stylistic or polish suggestions, if any>
+
+        OR
+
+        [NOT VERIFIED]  
+        Key issues:  
+        - <critical problem 1> (detailed) 
+        - <critical problem 2> (with fix idea)
+
+
     """)
 
 
-    REVIEWER_USER_PROMPT = textwrap.dedent("""
+    REVIEWER_USER_PROMPT = textwrap.dedent(f"""
         ### Chapter: "{chapter_title}" 
         **Original Word Count**: {raw_word_count}
         **Rewritten Word Count**: {rewritten_word_count}

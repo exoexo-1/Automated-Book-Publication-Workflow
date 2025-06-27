@@ -33,7 +33,7 @@ def rewriter(raw_data, special_instructions: str = "None"):
     word_count = len(raw_text.split())
 
     
-    REWRITER_SYSTEM_PROMPT = textwrap.dedent("""
+    REWRITER_SYSTEM_PROMPT = textwrap.dedent(f"""
         You are a professional book editor and rewriter specializing in literary fiction. 
         Your task is to rewrite book chapters "spinning" while:
         1. Preserving the original meaning and key plot points
@@ -45,7 +45,7 @@ def rewriter(raw_data, special_instructions: str = "None"):
         Rules:
         - Never add new plot elements or characters
         - Preserve all dialogue but improve its naturalness
-        - Target word count should be ±10% of original
+        - Target word count should be ±8% of original
     """)
 
     REWRITER_USER_PROMPT = textwrap.dedent(f"""

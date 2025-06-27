@@ -37,13 +37,26 @@ def editor(raw_data, reviewed_data):
     raw_text = raw_data["content"]
     reviewed_text = reviewed_data["content"]
     reviewer_feedback = reviewed_data["metadata"].get("reviewer_feedback", "None provided")
-
+    
+    raw_word_count = len(raw_text.split())
+    reviewed_word_count = len(reviewed_text.split())
     EDITOR_SYSTEM_PROMPT = textwrap.dedent(f"""
-        You are a professional book EDITOR working with the following REVIEWER FEEDBACK on rewritten(spinning) content of a book chapter:
-        ---
-        {reviewer_feedback}
-        ---
-        Your task is to revise the rewritten chapter while strictly following reviewer's feedback.
+        You are a professional editor preparing a chapter for final publication based on reviewer feedback.
+
+        Your job is to revise the rewritten chapter using feedback while ensuring:
+
+        - **Narrative integrity** is fully preserved  
+        - **Tone** is consistently literary and slightly formal  
+        - **Dialogue** remains true to character but flows naturally  
+        - **Readability** and flow are improved wherever possible  
+        - **Grammar** and punctuation are flawless
+
+        You may make structural changes, trim or expand paragraphs, or smooth transitions — as long as the core story and message stay intact.
+        put reviewer feedback at high priority
+        Use reviewer feedback as guidance, not absolute command — apply judgment to create a **final publishable version**.
+
+        Return only the final edited text, clean and ready.
+
     """)
 
     EDITOR_USER_PROMPT = textwrap.dedent(f"""
@@ -51,6 +64,8 @@ def editor(raw_data, reviewed_data):
         **Title**: {chapter_title}
         **Book**: {book_title}
         **Author**: {author}
+        **raw word count**: {raw_word_count}
+        **reviewed word count**: {reviewed_word_count}
         
         ### Reviewer Feedback:
         {reviewer_feedback}

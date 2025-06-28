@@ -1,11 +1,13 @@
-# save.py
+
+# save.py 
 
 import chromadb
+from rl_search import create_rl_search_agent
 
-# Initialize persistent ChromaDB client once
 chroma_client = chromadb.PersistentClient(path="./chroma_store")
 collection = chroma_client.get_or_create_collection("books_collection")
 
+rl_agent = create_rl_search_agent(chroma_client)
 
 def get_next_version(base_id: str) -> int:
     """Auto-increment version number for a given base_id."""
@@ -43,7 +45,7 @@ def save_chapter_auto_version(data: dict, base_id: str, stage:str):
         ids=[versioned_id],
         metadatas=[metadata]
     )
-    print(f" Saved {versioned_id} to ChromaDB (stage: {stage})")
+    print("\n\n",f" Saved {versioned_id} to ChromaDB (stage: {stage})","\n\n")
 
 
 
@@ -61,11 +63,6 @@ def fetch_chapter_by_version(versioned_id: str, stage: str = None) -> dict:
         return {}
         
     metadata = result["metadatas"][0]
-    
-    # Optional stage verification
-    if stage and metadata.get("stage") != stage:
-        print(f"Document {versioned_id} exists but has stage '{metadata.get('stage')}' (expected '{stage}')")
-        return {}
     
     return {
         "content": result["documents"][0],
@@ -114,3 +111,50 @@ def format_chapter_markdown(chapter_data):
     markdown += "> " + reviewer_feedback.replace('\n', '\n> ') + "\n"
 
     return markdown
+
+
+
+def intelligent_search(query: str, context: dict = None, user_feedback: dict = None) -> list:
+    """
+    Use RL agent for intelligent content search
+    
+    Args:
+        query: Search query string
+        context: Search context (preferred_stage, base_id, etc.)
+        user_feedback: User feedback for learning (clicked_result, satisfaction_score)
+    
+    Returns:
+        List of search results with content and metadata
+    """
+    return rl_agent.intelligent_search(query, context, user_feedback)
+
+def search_by_stage_progression(query: str) -> list:
+    """Search following the editing workflow progression"""
+    return rl_agent.stage_progression_search(query)
+
+def search_latest_content(base_id: str = "chapter1") -> list:
+    """Get the latest version of content using RL search"""
+    context = {"base_id": base_id}
+    return rl_agent.get_latest_version_search(base_id)
+
+def provide_search_feedback(clicked_result: bool = False, satisfaction_score: int = 3):
+    """
+    Provide feedback to improve search results
+    
+    Args:
+        clicked_result: Whether user clicked on a search result
+        satisfaction_score: User satisfaction (1-5 scale)
+    """
+    return {
+        "clicked_result": clicked_result,
+        "satisfaction_score": satisfaction_score
+    }
+
+def get_search_analytics() -> dict:
+    """Get RL search performance analytics"""
+    return rl_agent.get_search_stats()
+
+def save_rl_model():
+    """Save the trained RL model"""
+    rl_agent.save_q_table()
+    print("RL search model saved successfully")

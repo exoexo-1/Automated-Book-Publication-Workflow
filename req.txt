@@ -9,3 +9,4 @@ scikit-learn
 numpy
 pandas
 markdown2
+gradio

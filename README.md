@@ -17,3 +17,10 @@ Core Tools:
 LLM: For AI writing, reviewing, and editing.
 ChromaDB: For content versioning and search.
 RL Search Algorithm: For consistent data retrieval.
+
+
+# screen recording 
+
+
+https://github.com/user-attachments/assets/c567b01b-0e3e-485f-a6a3-fe27d1eb7d7f
+

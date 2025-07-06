@@ -1,10 +1,11 @@
 import gradio as gr
 from ScreenShot_scrapper import extract_chapter_info
 from save import (
-    save_chapter_auto_version, get_latest_version, fetch_chapter_by_version, 
-    format_chapter_markdown, get_next_version, intelligent_search, 
-    search_by_stage_progression, provide_search_feedback, get_search_analytics, 
-    save_rl_model
+    save_chapter_auto_version, get_latest_version, fetch_chapter_by_version,
+    format_chapter_markdown, get_next_version, intelligent_search,
+    search_by_stage_progression, provide_search_feedback, get_search_analytics,
+    save_rl_model, select_policy_stage, update_policy_stage as update_policy,
+    get_policy_stats, save_policy_model
 )
 from Rewriter import rewriter
 from Reviewer import reviwer
@@ -20,7 +21,9 @@ STATE = {
     "edited_data": None,
     "special_instruction": "None",
     "editing_content": False,
-    "editing_feedback": False
+    "editing_feedback": False,
+    "last_policy_suggestion": None,  
+    "policy_feedback": []
 }
 
 def reset_state():
@@ -54,14 +57,11 @@ def fetch_chapter(url):
     if not url.startswith("https://en.wikisource.org/wiki"):
         return create_error_response("❌ Invalid URL! Please use a valid Wikisource URL.")
     
+
     try:
-        # Reset state for new chapter
         reset_state()
-        
-        # Extract chapter data
         data = extract_chapter_info(url)
         
-        # Validate extracted data
         if not data or not data.get("content"):
             return create_error_response("❌ Failed to extract chapter content!")
         
@@ -71,47 +71,61 @@ def fetch_chapter(url):
             "reviewer_feedback": ""
         }, base_id="chapter1", stage="raw")
 
+        # Get policy suggestion with context
+        next_action = select_policy_stage({
+            "current_stage": "raw",
+            "url": url,
+            "previous_actions": []
+        })
+        STATE["last_policy_suggestion"] = next_action
+        print(f"🤖 Policy suggests next stage: {next_action}")
+
         # Update state
         STATE["raw_data"] = {
             "content": data["content"],
             "metadata": {
-                **data, 
-                "version": get_latest_version("chapter1", "raw"), 
-                "stage": "raw", 
-                "versioned_id": f"chapter1_ver{get_latest_version('chapter1', 'raw')}", 
+                **data,
+                "version": get_latest_version("chapter1", "raw"),
+                "stage": "raw",
+                "versioned_id": f"chapter1_ver{get_latest_version('chapter1', 'raw')}",
                 "reviewer_feedback": ""
             }
         }
         STATE["current_stage"] = "raw"
 
-        # Use RL search for similar content
-        try:
-            search_context = {
-                "preferred_stage": "raw",
-                "base_id": "chapter1"
-            }
-            similar_content = intelligent_search(data["chapter_title"], search_context)
-            provide_search_feedback(clicked_result=True, satisfaction_score=4)
-        except Exception as e:
-            print(f"Search failed: {e}")
-
+        suggestion_text = f"🤖 Suggested Next Step: {next_action.capitalize()}"
+        button_states = get_button_states_for_action(next_action)
+        
         return (
             format_chapter_markdown(STATE["raw_data"]),
-            gr.update(value=""),  # feedback_output
-            gr.update(visible=True),   # rewrite_btn
-            gr.update(visible=True),   # rewrite_special_btn
-            gr.update(visible=False),  # rewrite_again_btn
-            gr.update(visible=False),  # reviewer_btn
-            gr.update(visible=False),  # editor_btn
-            gr.update(visible=False),  # edit_btn
-            gr.update(visible=False),  # edit_feedback_btn
-            gr.update(visible=False),  # finalize_btn
-            gr.update(visible=False),  # status_output
-            gr.update(visible=False)   # special_panel
+            gr.update(value=suggestion_text),
+            *button_states
         )
         
     except Exception as e:
         return create_error_response(f"❌ Error fetching chapter: {str(e)}")
+    
+def get_button_states_for_action(action):
+    """Return button visibility states based on suggested action"""
+    base_states = [
+        gr.update(visible=True),   # rewrite_btn
+        gr.update(visible=True),   # rewrite_special_btn
+        gr.update(visible=False),  # rewrite_again_btn
+        gr.update(visible=False),  # reviewer_btn
+        gr.update(visible=False),  # editor_btn
+        gr.update(visible=False),  # edit_btn
+        gr.update(visible=False),  # edit_feedback_btn
+        gr.update(visible=False),  # finalize_btn
+        gr.update(visible=False),  # status_output
+        gr.update(visible=False)   # special_panel
+    ]
+    
+    if action == "rewritten":
+        base_states[0] = gr.update(visible=True, variant="primary")  # Highlight rewrite button
+    elif action == "edited":
+        base_states[3] = gr.update(visible=True, variant="primary")  # Highlight reviewer button
+    
+    return base_states
 
 def create_error_response(error_msg):
     """Create consistent error response"""
@@ -153,27 +167,33 @@ def smart_content_search(query):
         return f"❌ Search error: {str(e)}"
 
 def show_analytics():
-    """Show RL search analytics"""
     try:
         stats = get_search_analytics()
-        if not stats:
-            return "No analytics available yet"
+        policy_info = get_policy_stats()
         
-        analytics = "## 📊 RL Search Analytics\n\n"
-        analytics += f"**Total Searches:** {stats.get('total_searches', 0)}\n"
-        analytics += f"**Average Reward:** {stats.get('average_reward', 0):.3f}\n"
-        analytics += f"**Exploration Rate:** {stats.get('current_epsilon', 0):.3f}\n"
-        analytics += f"**Q-Table Size:** {stats.get('q_table_size', 0)}\n\n"
+        analytics = "## 📊 System Analytics\n\n"
         
-        if 'action_distribution' in stats:
-            analytics += "**Action Usage:**\n"
-            for action, count in stats['action_distribution'].items():
-                analytics += f"- {action}: {count}\n"
+        # Policy Insights
+        analytics += "### 🤖 Policy Insights\n"
+        analytics += f"**Last Suggestion:** {STATE.get('last_policy_suggestion', 'None')}\n"
+        analytics += "**Action Preferences:**\n"
+        for action, pref in policy_info["preferences"].items():
+            prob = policy_info["probabilities"][action]
+            analytics += f"- {action.capitalize()}: Preference={pref:.2f}, Probability={prob:.2f}\n"
+        
+        # Search Analytics (if available)
+        if stats:
+            analytics += "\n### 🔍 Search Analytics\n"
+            analytics += f"**Total Searches:** {stats.get('total_searches', 0)}\n"
+            analytics += f"**Average Reward:** {stats.get('average_reward', 0):.3f}\n"
+            if 'action_distribution' in stats:
+                analytics += "**Action Usage:**\n"
+                for action, count in stats['action_distribution'].items():
+                    analytics += f"- {action}: {count}\n"
         
         return analytics
     except Exception as e:
         return f"❌ Analytics error: {str(e)}"
-
 def rewrite_chapter(use_special):
     """Handle chapter rewriting"""
     if STATE["raw_data"] is None:
@@ -215,6 +235,8 @@ def rewrite_chapter(use_special):
                 **rewritten_content["metadata"], 
                 "content": rewritten_content["content"]
             }, "chapter1", "rewritten")
+            reward = 1 if STATE["last_policy_suggestion"] == "rewritten" else 0.5
+            update_policy("rewritten", reward)
 
             return (
                 format_chapter_markdown(rewritten_content),
@@ -231,6 +253,7 @@ def rewrite_chapter(use_special):
                 gr.update(visible=False)   # special_panel
             )
         except Exception as e:
+            update_policy("rewritten", -0.5)
             return create_error_response(f"❌ Error during rewriting: {str(e)}")
 
 def save_special_instruction(instr):
@@ -366,6 +389,8 @@ def review_chapter():
             "source_url": STATE["reviewed_data"]["metadata"]["source_url"],
             "reviewer_feedback": feedback
         }, base_id="chapter1", stage="reviewed")
+        reward = 1 if STATE["last_policy_suggestion"] == "edited" else 0.5
+        update_policy("edited", reward)
         
         return (
             format_chapter_markdown(STATE["reviewed_data"]),
@@ -381,6 +406,7 @@ def review_chapter():
             gr.update(visible=False),  # status_output
         )
     except Exception as e:
+        update_policy("edited", -0.5)
         return create_error_response(f"❌ Error during review: {str(e)}")
 
 def edit_with_feedback():

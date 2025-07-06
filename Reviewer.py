@@ -13,23 +13,23 @@ if not openai_api_key:
 
 openai = OpenAI(api_key=openai_api_key)
 
-latest_version_raw = get_latest_version("chapter1", "raw")
-latest_version_rewritten = get_latest_version("chapter1", "rewritten")
+# latest_version_raw = get_latest_version("chapter1", "raw")
+# latest_version_rewritten = get_latest_version("chapter1", "rewritten")
 
-if latest_version_raw == 0 or latest_version_rewritten == 0:
-    raise ValueError("Missing raw or rewritten version in ChromaDB.")
+# if latest_version_raw == 0 or latest_version_rewritten == 0:
+#     raise ValueError("Missing raw or rewritten version in ChromaDB.")
 
-versioned_id_raw = f"chapter1_ver{latest_version_raw}"
-versioned_id_rewritten = f"chapter1_ver{latest_version_rewritten}"
+# versioned_id_raw = f"chapter1_ver{latest_version_raw}"
+# versioned_id_rewritten = f"chapter1_ver{latest_version_rewritten}"
 
-raw_data = fetch_chapter_by_version(versioned_id_raw, "raw")
-rewritten_data = fetch_chapter_by_version(versioned_id_rewritten, "rewritten")
+# raw_data = fetch_chapter_by_version(versioned_id_raw, "raw")
+# rewritten_data = fetch_chapter_by_version(versioned_id_rewritten, "rewritten")
 
-# print(rewritten_data)
-# print(raw_data)
+# # print(rewritten_data)
+# # print(raw_data)
 
-if not raw_data or not rewritten_data:
-    raise ValueError("Failed to fetch both raw and rewritten versions.")
+# if not raw_data or not rewritten_data:
+#     raise ValueError("Failed to fetch both raw and rewritten versions.")
 
 def reviwer(raw_data,rewritten_data):
     raw_text = raw_data["content"]

@@ -6,22 +6,22 @@ import textwrap
 import time
 
 # Load environment variables
-load_dotenv(override=True)
-google_api_key = os.getenv('GOOGLE_API_KEY')
+# load_dotenv(override=True)
+# google_api_key = os.getenv('GOOGLE_API_KEY')
 
-if not google_api_key:
-    raise ValueError("Google API Key not set in environment variables")
+# if not google_api_key:
+#     raise ValueError("Google API Key not set in environment variables")
 
-# Configure Gemini
-genai.configure(api_key=google_api_key)
+# # Configure Gemini
+# genai.configure(api_key=google_api_key)
 
-latest_version_raw = get_latest_version("chapter1", "raw")
+# latest_version_raw = get_latest_version("chapter1", "raw")
 
-if latest_version_raw == 0:
-    raise ValueError("Missing raw version in ChromaDB.")
+# if latest_version_raw == 0:
+#     raise ValueError("Missing raw version in ChromaDB.")
 
-versioned_id_raw = f"chapter1_ver{latest_version_raw}"
-raw_data = fetch_chapter_by_version(versioned_id_raw, "raw")
+# versioned_id_raw = f"chapter1_ver{latest_version_raw}"
+# raw_data = fetch_chapter_by_version(versioned_id_raw, "raw")
 
 
 

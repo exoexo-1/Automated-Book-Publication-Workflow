@@ -18,17 +18,17 @@ genai.configure(api_key=google_api_key)
 
 
 
-latest_version_raw = get_latest_version("chapter1", "raw")
-latest_version_reviewed = get_latest_version("chapter1", "reviewed")
+# latest_version_raw = get_latest_version("chapter1", "raw")
+# latest_version_reviewed = get_latest_version("chapter1", "reviewed")
 
-if latest_version_raw == 0 or latest_version_reviewed == 0:
-    raise ValueError("Missing raw or reviewed version in ChromaDB.")
+# if latest_version_raw == 0 or latest_version_reviewed == 0:
+#     raise ValueError("Missing raw or reviewed version in ChromaDB.")
 
-versioned_id_raw = f"chapter1_ver{latest_version_raw}"
-raw_data = fetch_chapter_by_version(versioned_id_raw, "raw")
+# versioned_id_raw = f"chapter1_ver{latest_version_raw}"
+# raw_data = fetch_chapter_by_version(versioned_id_raw, "raw")
 
-versioned_id_reviewed = f"chapter1_ver{latest_version_reviewed}"
-reviewed_data = fetch_chapter_by_version(versioned_id_reviewed, "reviewed")
+# versioned_id_reviewed = f"chapter1_ver{latest_version_reviewed}"
+# reviewed_data = fetch_chapter_by_version(versioned_id_reviewed, "reviewed")
 
 def editor(raw_data, reviewed_data):
     book_title = raw_data["metadata"].get("book_title", "Untitled")
